@@ -15,6 +15,9 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-dev --optimize-autoloader
 
+      - name: Optimize Laravel
+        run: php artisan config:cache && php artisan route:cache && php artisan view:cache
+
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
