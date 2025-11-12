@@ -34,7 +34,6 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /laravel/
           exclude: |
-            public/**
             */.git
             */node_modules/*
             */docker/*
