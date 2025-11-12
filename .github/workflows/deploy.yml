@@ -15,6 +15,12 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-dev --optimize-autoloader
 
+      - name: Install TailWindCSS
+        run: npm install tailwindcss @tailwindcss/vite
+
+      - name: Build Tailwind CSS
+        run: npx tailwindcss -i ./resources/css/input.css -o ./public/css/output.css --minify
+
       - name: Deploy backend (Laravel)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
