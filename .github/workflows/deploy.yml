@@ -24,7 +24,7 @@ jobs:
         run: npm install tailwindcss @tailwindcss/vite
 
       - name: Build Tailwind CSS
-        run: npx tailwindcss -i ./resources/css/input.css -o ./public/css/output.css --minify
+        run: npm run build
 
       - name: Deploy backend (Laravel)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
