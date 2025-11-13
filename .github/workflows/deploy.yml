@@ -20,8 +20,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install TailWindCSS
-        run: npm install tailwindcss @tailwindcss/vite
+      - name: Install Node dependencies
+        run: npm ci
 
       - name: Build Tailwind CSS
         run: npm run build
