@@ -1,4 +1,5 @@
-
+// PRUEBAS
+console.log('funciones.js cargado correctamente');
 $(document).ready(function () {
     $.ajaxSetup({
         headers: {
