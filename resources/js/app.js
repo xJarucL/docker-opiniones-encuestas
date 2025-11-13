@@ -1,4 +1,7 @@
 import './bootstrap';
+import './funciones.js';
+import './sweetalerts.js';
+
 import Alpine from 'alpinejs'
 import $ from 'jquery';
 
