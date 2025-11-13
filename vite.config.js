@@ -12,8 +12,9 @@ export default defineConfig({
                 'resources/js/funciones.js',
                 'resources/js/sweetalert.js',
             ],
-            buildDirectory: '../build',
+            buildDirectory: 'build',
             refresh: true,
         }),
+        tailwindcss(),
     ],
 });
