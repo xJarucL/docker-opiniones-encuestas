@@ -13,13 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install PHP dependencies
-        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-
-      - name: Optimize Laravel
-        run: |
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
+        run: composer install --no-dev --optimize-autoloader
 
       - name: Install Node.js
         uses: actions/setup-node@v4
