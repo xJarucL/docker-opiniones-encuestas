@@ -1,4 +1,4 @@
-name:  Deploy Laravel to HostGator (separated public)
+name: Deploy Laravel to HostGator (with full Vite build)
 
 on:
   push:
@@ -9,12 +9,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Clonar el repositorio
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Instalar dependencias de Laravel
       - name: Install PHP dependencies
-        run: composer install --no-dev --optimize-autoloader
+        run: composer install --no-dev --optimize-autoloader --no-interaction
 
+      # Instalar Node.js y dependencias de frontend
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
@@ -23,10 +26,12 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Build Tailwind CSS
+      # Compilar los assets (Tailwind + JS con Vite)
+      - name: Build assets
         run: npm run build
 
-      - name: Deploy backend (Laravel)
+      # Subir el backend (Laravel excepto public/)
+      - name: Deploy Laravel backend
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -34,14 +39,18 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /laravel/
           exclude: |
-            */.git
             */node_modules/*
-            */docker/*
-            */.github/*
             */tests/*
+            */.github/*
             **/.env.example
             **/README.md
-      - name: Deploy public assets
+            **/vite.config.js
+            **/tailwind.config.js
+            **/postcss.config.js
+            **/package-lock.json
+
+      # Subir los archivos públicos (incluyendo el build)
+      - name: Deploy public build & assets
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -49,4 +58,3 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: public/
           server-dir: /
-
