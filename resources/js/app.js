@@ -9,5 +9,9 @@ window.Alpine = Alpine
 
 Alpine.start()
 
+// PRUEBA
+console.log('jQuery disponible:', typeof $);
+console.log('app.js cargado');
+
 import './sweetalert.js';
 import './funciones.js';
