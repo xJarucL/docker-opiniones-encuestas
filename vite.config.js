@@ -9,8 +9,6 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
-                'resources/js/funciones.js',
-                'resources/js/sweetalert.js',
             ],
             buildDirectory: 'build',
             refresh: true,
