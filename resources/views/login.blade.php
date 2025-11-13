@@ -1,3 +1,6 @@
+<!-- PRUEBA -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
 @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/funciones.js', 'resources/js/sweetalert.js'])
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
