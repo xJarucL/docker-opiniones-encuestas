@@ -65,4 +65,4 @@ networks:
         driver: bridge
 volumes:
     sail-mysql:
-    driver: local
+        driver: local
