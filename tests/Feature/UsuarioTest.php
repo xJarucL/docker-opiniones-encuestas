@@ -18,6 +18,7 @@ class UsuarioTest extends TestCase
     protected $adminTipo;
     protected $alumnoTipo;
 
+    // En esta parte, se preparan los tipo de usuario para hacer inserciones de usuarios
     protected function setUp(): void
     {
         parent::setUp();
@@ -34,6 +35,7 @@ class UsuarioTest extends TestCase
     /** @test */
     public function login()
     {
+        // Crea un usuario nuevo
         $user = User::create([
             'username' => 'testuser',
             'nombres' => 'Test',
@@ -44,11 +46,13 @@ class UsuarioTest extends TestCase
             'fk_tipo_user' => $this->adminTipo->pk_tipo_user,
         ]);
 
+        // Manda las credenciales a la ruta de iniciar sesión
         $response = $this->post('/iniciando_sesion', [
             'email' => 'test@correo.com',
             'password' => 'test',
         ]);
 
+        // Espera que la respuesta del servidor sea esta:
         $response->assertStatus(200)
                  ->assertJson([
                      'mensaje' => '¡Inicio de sesión exitoso!',
@@ -64,6 +68,7 @@ class UsuarioTest extends TestCase
 
     /** @test */
     public function usuarioAutenticadoEnrutamiento(){
+        // Crea un usuario nuevo
         $user = User::create([
             'username' => 'jarucl',
             'nombres' => 'Jaruny',
@@ -73,10 +78,13 @@ class UsuarioTest extends TestCase
             'fk_tipo_user' => $this->adminTipo->pk_tipo_user,
         ]);
 
+        // Crea una sesión con el usuario creado
         $this->actingAs($user);
 
+        // Intenta acceder a la ruta de inicio, la cual, está asegurada
         $response = $this->get(route('inicio'));
 
+        // Como el usuario está autenticado, la prueba espera una respuesta 200 del servidor
         $response->assertStatus(200);
     }
 
@@ -86,8 +94,10 @@ class UsuarioTest extends TestCase
 
     /** @test */
     public function usuarioNOAutenticadoEnrutamiento(){
+        // Sin iniciar sesión, se intenta acceder a la ruta de inicio
         $response = $this->get(route('inicio'));
 
+        // La función espera que un usuario no autenticado sea redireccionado al inicio de sesión (login)
         $response->assertRedirect(route('login'));
     }
 
