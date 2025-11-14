@@ -28,6 +28,9 @@ class UsuarioTest extends TestCase
         $this->alumnoTipo = Tipo_usuario::where('nombre', 'Común')->first();
     }
 
+    // Esta prueba debe crear un usuario e intentar iniciar sesión mandando la información al endpoint de inicio,
+    // si todo sale bien, espera la respuesta del controlador, la cual, se retorna en JSON.
+
     /** @test */
     public function login()
     {
@@ -56,6 +59,9 @@ class UsuarioTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
+    // Esta prueba es para validar la seguridad de rutas de usuario,
+    // en este caso, valida que un usuario autenticado pueda acceder al inicio (dashboard)
+
     /** @test */
     public function usuarioAutenticadoEnrutamiento(){
         $user = User::create([
@@ -73,6 +79,10 @@ class UsuarioTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    // De igual forma, esta prueba intenta acceder al inicio pero esta vez sin autenticar un usuario,
+    // el sistema debe retornar al login cuando el usuario no tiene una sesión activa,
+    // por lo tanto, es lo que nuestra prueba espera que pase.
 
     /** @test */
     public function usuarioNOAutenticadoEnrutamiento(){
