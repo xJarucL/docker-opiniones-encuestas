@@ -22,7 +22,7 @@
                 {{ isset($usuario) ? 'Editar usuario' : 'Registrar usuario' }}
             </h1>
 
-            <a href="{{ url()->previous() }}"
+            <a href="{{ route('lista_usuarios') }}"
                 title="Volver"
                 class="inline-flex items-center space-x-2 bg-gray-200 text-gray-700 px-3 py-2 rounded-full shadow hover:bg-gray-300 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

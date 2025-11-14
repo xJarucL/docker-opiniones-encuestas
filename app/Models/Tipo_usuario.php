@@ -8,4 +8,8 @@ class Tipo_usuario extends Model
 {
     protected $table = 'tipo_user';
 
+    protected $fillable = [
+        'nombre',
+    ];
+
 }
