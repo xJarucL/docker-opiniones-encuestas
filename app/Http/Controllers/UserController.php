@@ -182,8 +182,8 @@ class UserController extends Controller
         $usuario = auth()->user();
         $comentarios = Comentario::with(['autor','respuestas.autor'])
                 ->where('fk_perfil_user', $usuario->pk_usuario)
-                ->whereIn('estatus', ['visible','oculto'])   
-                ->whereNull('fk_coment_respuesta')           
+                ->whereIn('estatus', ['visible','oculto'])
+                ->whereNull('fk_coment_respuesta')
                 ->orderByDesc('fecha_creacion')
                 ->get();
 
