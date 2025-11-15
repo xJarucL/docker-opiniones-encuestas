@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
@@ -26,7 +25,7 @@ class Comentario extends Model
     const DELETED_AT = 'fecha_eliminacion';
 
     // Relaciones
-    public function autor() {
+    public function user() {
         return $this->belongsTo(User::class, 'fk_autor', 'pk_usuario');
     }
 
@@ -49,5 +48,13 @@ class Comentario extends Model
             return 'Anónimo';
         }
         return $this->autor->username ?? 'Usuario';
+    }
+    public function autor()
+    {
+        // Asumiendo:
+        // 'fk_autor' = clave foránea en la tabla 'comentarios'
+        // 'pk_usuario' = clave primaria en la tabla 'users'
+        
+        return $this->belongsTo(User::class, 'fk_autor', 'pk_usuario');
     }
 }

@@ -43,6 +43,16 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Muestra el panel de control (dashboard) para usuarios normales (Tipo 2).
+     */
+    public function dashboard()
+    {
+        $usuario = auth()->user();
+        // Se asume que existe la vista 'resources/views/dashboard.blade.php'
+        return view('users.dashboard', compact('usuario'));
+    }
+
     public function listaUsuarios(){
         $usuarios = User::with('tipo_usuario')->paginate(10);
         $tipos_usuario = Tipo_usuario::all();
@@ -66,14 +76,14 @@ class UserController extends Controller
         $usuario = User::findOrFail($id);
         $usuario->delete();
 
-        return redirect()->route('lista_usuarios')->with('success', 'Usuario eliminado correctamente.');
+        return redirect()->route('usuarios.lista')->with('success', 'Usuario eliminado correctamente.');
     }
 
     public function restaurar($id){
         $usuario = User::withTrashed()->findOrFail($id);
         $usuario->restore();
 
-        return redirect()->route('lista_usuarios_inactivos')->with('success', 'Usuario restaurado correctamente.');
+        return redirect()->route('usuarios.inactivos')->with('success', 'Usuario restaurado correctamente.');
     }
 
     public function listaUsuarios_inactivos(){
@@ -157,7 +167,7 @@ class UserController extends Controller
 
         return response()->json([
             'mensaje' => $isEdit ? 'Usuario editado correctamente.' : 'Registro guardado correctamente.',
-            'ruta'    => route('lista_usuarios'),
+            'ruta'    => route('usuarios.lista'), // ⬅️ RUTA CORREGIDA
             'class'   => 'success'
         ]);
     }
@@ -187,13 +197,14 @@ class UserController extends Controller
                 ->orderByDesc('fecha_creacion')
                 ->get();
 
-            return view('users.perfil', compact('usuario','comentarios'));
-        }
+        // ⬇️ LÍNEA CORREGIDA (debes devolver la vista) ⬇️
+        return view('users.perfil', compact('usuario','comentarios'));
+    }
 
     public function listarCompañeros(){
         $usuarios = User::where('estatus', true)
-                        ->where('fk_tipo_user', 2)
-                        ->get();
+                         ->where('fk_tipo_user', 2)
+                         ->get();
 
         return view('users.compañeros', compact('usuarios'));
     }

@@ -57,7 +57,7 @@
                 </a>
 
                 @if(auth()->user()->fk_tipo_user == 1)
-                    <a href="{{ route('lista_usuarios') }}"
+                    <a href="{{ route('usuarios.lista') }}"
                        class="block px-4 py-2 hover:bg-purple-100 hover:text-purple-700 rounded-lg transition">
                         Gestión de usuarios
                     </a>
@@ -111,7 +111,7 @@
             @if(auth()->user()->fk_tipo_user == 1)
                 <div class="border-t border-purple-600 pt-2 mt-2">
                     <span class="text-xs uppercase text-purple-300 font-semibold">Administrador</span>
-                    <a href="{{ route('lista_usuarios') }}" class="block px-4 py-2 rounded-lg hover:bg-purple-600 transition mt-1">
+                    <a href="{{ route('usuarios.lista') }}" class="block px-4 py-2 rounded-lg hover:bg-purple-600 transition mt-1">
                         Gestión de usuarios
                     </a>
                 </div>
