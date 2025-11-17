@@ -29,9 +29,12 @@ class UserController extends Controller
         if ($usuario && Hash::check($request->password, $usuario->password)) {
             Auth::login($usuario);
 
+            // --- CORRECCIÓN ---
+            // Todos los usuarios se redirigen a la misma ruta 'inicio'.
+            // El método dashboard() se encargará de decidir qué mostrar.
             return response()->json([
                 'mensaje' => '¡Inicio de sesión exitoso!',
-                'ruta' => route('inicio'),
+                'ruta' => route('inicio'), 
                 'class' => 'success'
             ]);
 
@@ -44,13 +47,37 @@ class UserController extends Controller
     }
 
     /**
-     * Muestra el panel de control (dashboard) para usuarios normales (Tipo 2).
+     * Muestra el panel de control (dashboard) correcto según el rol del usuario.
      */
     public function dashboard()
     {
         $usuario = auth()->user();
-        // Se asume que existe la vista 'resources/views/dashboard.blade.php'
-        return view('users.dashboard', compact('usuario'));
+
+        // --- CORRECCIÓN ---
+        // Comprobar el tipo de usuario
+        if ($usuario->fk_tipo_user == 1) {
+            // Si es ADMIN (Tipo 1)
+            // Cargar datos para el dashboard de admin
+            $totalUsuarios = \App\Models\User::count();
+            $totalComentarios = \App\Models\Comentario::count();
+            // (Asumiendo que tienes un modelo Encuesta o usamos DB)
+            $totalEncuestas = \Illuminate\Support\Facades\DB::table('encuestas')->count();
+
+            // Retornar la VISTA de admin
+            return view('admin.dashboard', [
+                'usuario' => $usuario,
+                'totalUsuarios' => $totalUsuarios,
+                'totalComentarios' => $totalComentarios,
+                'totalEncuestas' => $totalEncuestas
+            ]);
+            
+        } else {
+            // Si es USUARIO NORMAL (Tipo 2 o cualquier otro)
+            // Retornar la VISTA de usuario normal
+            return view('users.dashboard', [
+                'usuario' => $usuario
+            ]);
+        }
     }
 
     public function listaUsuarios(){
@@ -167,7 +194,7 @@ class UserController extends Controller
 
         return response()->json([
             'mensaje' => $isEdit ? 'Usuario editado correctamente.' : 'Registro guardado correctamente.',
-            'ruta'    => route('usuarios.lista'), // ⬅️ RUTA CORREGIDA
+            'ruta'    => route('usuarios.lista'),
             'class'   => 'success'
         ]);
     }
@@ -197,7 +224,6 @@ class UserController extends Controller
                 ->orderByDesc('fecha_creacion')
                 ->get();
 
-        // ⬇️ LÍNEA CORREGIDA (debes devolver la vista) ⬇️
         return view('users.perfil', compact('usuario','comentarios'));
     }
 

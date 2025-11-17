@@ -16,6 +16,7 @@ class Encuesta extends Model
         'estado',
         'fecha_inicio', // <-- AÑADIDO
         'fecha_fin',    // <-- AÑADIDO
+        'resultados_publicos', // <-- AÑADE ESTA LÍNEA
     ];
 
     protected $casts = [

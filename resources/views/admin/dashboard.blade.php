@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Administrativo</title>
+    
+    {{-- Cargamos TailwindCSS desde el CDN --}}
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}} {{-- Eliminado: No es necesario si usas el CDN --}}
     
     <style>
         @keyframes fade-slide {
@@ -38,7 +42,7 @@
                     <h2 class="text-xl font-bold text-white">Panel de Administración</h2>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <a href="{{ route('admin.dashboard') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">
+                    <a href="{{ route('inicio') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">
                         Dashboard
                     </a>
                     <a href="{{ route('admin.encuestas.index') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">
@@ -50,7 +54,7 @@
                     <a href="{{ route('admin.comentarios.index') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">
                         Comentarios
                     </a>
-                    <a href="{{ route('usuarios.lista') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">
+                    <a href="{{ route('admin.usuarios.lista') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">
                         Usuarios
                     </a>
                     <form action="{{ route('logout') }}" method="POST" class="inline">
@@ -91,8 +95,8 @@
         <!-- Tarjetas de gestión -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             
-            {{-- Tarjeta: Gestión de Usuarios --}}
-            <a href="{{ route('usuarios.lista') }}" 
+            {{-- Tarjeta: Gestión de Usuarios (CORREGIDA) --}}
+            <a href="{{ route('admin.usuarios.lista') }}" {{-- RUTA CORREGIDA --}}
                class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden animate-fade-slide"
                style="animation-delay: 0.1s;">
                 <div class="p-6">

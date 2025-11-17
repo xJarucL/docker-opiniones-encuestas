@@ -25,7 +25,6 @@
 <body class="bg-gray-50 min-h-screen">
     
     <nav class="bg-gradient-to-r from-purple-600 to-purple-800 shadow-lg mb-8">
-        {{-- ... tu barra de navegación (sin cambios) ... --}}
         <div class="container mx-auto px-4 py-4 max-w-7xl">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
@@ -37,11 +36,16 @@
                     <h2 class="text-xl font-bold text-white">Panel de Administración</h2>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <a href="{{ route('admin.dashboard') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">Dashboard</a>
+                    
+                    {{-- CORRECCIÓN 1: Apuntar a 'inicio' (Dashboard unificado) --}}
+                    <a href="{{ route('inicio') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">Dashboard</a>
+                    
                     <a href="{{ route('admin.encuestas.index') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">Encuestas</a>
                     <a href="{{ route('admin.categorias.index') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">Categorías</a>
                     <a href="{{ route('admin.comentarios.index') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">Comentarios</a>
-                    <a href="{{ route('usuarios.lista') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">Usuarios</a>
+                    
+                    {{-- CORRECCIÓN 2: Apuntar a 'admin.usuarios.lista' --}}
+                    <a href="{{ route('admin.usuarios.lista') }}" class="px-4 py-2 text-white hover:bg-white/20 rounded-lg transition font-medium">Usuarios</a>
                     
                     <form action="{{ route('logout') }}" method="POST" class="inline">
                         @csrf
@@ -54,10 +58,12 @@
         </div>
     </nav>
     
+    <!-- Contenedor Principal -->
     <main class="container mx-auto px-4 pb-8 max-w-7xl">
         @yield('content')
     </main>
     
+    <!-- Footer -->
     <footer class="mt-12 py-6 bg-white border-t border-gray-200">
         <div class="container mx-auto px-4 max-w-7xl text-center text-gray-600 text-sm">
             © {{ date('Y') }} Sistema de Opiniones y Encuestas
@@ -71,7 +77,7 @@
     {{-- Directiva para insertar scripts específicos de las vistas --}}
     @stack('scripts') 
     
-    {{-- 4. MANEJADOR DE SWEETALERT2 (CORREGIDO) --}}
+    {{-- 4. MANEJADOR DE SWEETALERT2 (Corregido para funcionar con 'data-swal-submit-button') --}}
     <script>
         document.addEventListener('click', function (e) {
             const button = e.target.closest('[data-swal-form]');
@@ -91,18 +97,12 @@
                     cancelButtonText: button.dataset.swalCancel || 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        
-                        // --- INICIO DE LA CORRECCIÓN ---
-                        // Buscamos el botón de submit oculto dentro del formulario
                         const submitButton = form.querySelector('[data-swal-submit-button]');
-                        
                         if (submitButton) {
-                            submitButton.click(); // ¡Esto enviará el POST + _METHOD correctamente!
+                            submitButton.click(); 
                         } else {
-                            // Fallback por si no se encuentra (no debería pasar)
                             form.submit();
                         }
-                        // --- FIN DE LA CORRECCIÓN ---
                     }
                 });
             }

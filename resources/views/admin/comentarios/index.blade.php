@@ -7,7 +7,8 @@
 <div class="mb-6">
     <div class="flex items-center justify-between">
         <div>
-            <a href="{{ route('admin.dashboard') }}" class="text-purple-600 hover:text-purple-700 mb-2 flex items-center gap-2">
+            {{-- CORREGIDO: El enlace ahora apunta a 'inicio' --}}
+            <a href="{{ route('inicio') }}" class="text-purple-600 hover:text-purple-700 mb-2 flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
@@ -16,7 +17,8 @@
             <h1 class="text-3xl font-bold text-gray-800 mt-2">Gestión de Comentarios</h1>
             <p class="text-gray-600 mt-1">Modera y administra todos los comentarios del sistema.</p>
         </div>
-        </div>
+        {{-- (El botón de 'nuevo' no aplica aquí) --}}
+    </div>
 </div>
 
 {{-- Alerta del componente --}}
@@ -24,6 +26,7 @@
     <x-msj-alert />
 </div>
 
+<!-- Estadísticas -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
         <div class="flex justify-between items-start">
@@ -70,6 +73,7 @@
                     <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase">Comentario</th>
                     <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase">En Perfil de</th>
                     <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase">Fecha</th>
+                    <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase">Estado</th>
                     <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase">Acciones</th>
                 </tr>
             </thead>
@@ -93,21 +97,51 @@
                         <td class="p-4 align-top text-sm text-gray-600">
                             {{ $comentario->fecha_creacion->format('d/m/Y H:i') }}
                         </td>
-                     
+                        <td class="p-4 align-top">
+                            {{-- CORREGIDO: Añadido el estado (visible/oculto) que faltaba en el HTML original --}}
+                            @if ($comentario->estatus == 1)
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">Visible</span>
+                            @else
+                                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold">Oculto</span>
+                            @endif
+                        </td>
                         <td class="p-4 align-top">
                             <div class="flex gap-2">
+                                {{-- CORREGIDO: Lógica de Ocultar/Mostrar ahora usa SweetAlert --}}
                                 @if ($comentario->estatus == 1)
                                     <form action="{{ route('admin.comentarios.hide', $comentario->pk_comentario) }}" method="POST">
                                         @csrf
                                         @method('PATCH')
-                                        <button type="submit" title="Ocultar" class="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors">
+                                        <button type="button" 
+                                                data-swal-form
+                                                data-swal-title="¿Ocultar Comentario?"
+                                                data-swal-icon="warning"
+                                                data-swal-confirm="Sí, ocultar"
+                                                data-swal-color="#f59e0b"
+                                                title="Ocultar" class="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .97-3.031 4.27-5.7 8.15-6.222C11.104 5.318 11.55 5 12 5c.45 0 .896.318 1.303.8A10.05 10.05 0 0121.542 12c-.229.706-.5 1.383-.816 2.025M12 15a3 3 0 100-6 3 3 0 000 6z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1l22 22"></path></svg>
                                         </button>
+                                        <button type="submit" class="hidden" data-swal-submit-button></button>
                                     </form>
                                 @else
-                                    
+                                    {{-- CORREGIDO: Lógica de "Mostrar" añadida --}}
+                                    <form action="{{ route('admin.comentarios.show', $comentario->pk_comentario) }}" method="POST">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="button" 
+                                                data-swal-form
+                                                data-swal-title="¿Mostrar Comentario?"
+                                                data-swal-icon="question"
+                                                data-swal-confirm="Sí, mostrar"
+                                                data-swal-color="#10b981"
+                                                title="Mostrar" class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-.97 3.031 4.27 5.7-8.15 6.222C6.88 18.92 3.06 16.3 2.458 12z"></path></svg>
+                                        </button>
+                                        <button type="submit" class="hidden" data-swal-submit-button></button>
+                                    </form>
                                 @endif
                                 
+                                {{-- CORREGIDO: Formulario de "Eliminar" ahora usa el botón oculto --}}
                                 <form action="{{ route('admin.comentarios.destroy', $comentario->pk_comentario) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
@@ -125,6 +159,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                         </svg>
                                     </button>
+                                    <button type="submit" class="hidden" data-swal-submit-button></button>
                                 </form>
                             </div>
                         </td>
@@ -143,30 +178,4 @@
 
 @endsection
 
-@push('scripts')
-<script>
-// SweetAlert2 para confirmación de eliminación (igual que en tu vista de categorías)
-document.addEventListener('click', function (e) {
-    const button = e.target.closest('[data-swal-form]');
-    if (button) {
-        e.preventDefault();
-        const form = button.closest('form');
-        
-        Swal.fire({
-            title: button.dataset.swalTitle || '¿Estás seguro?',
-            text: button.dataset.swalText || 'No podrás revertir esta acción.',
-            icon: button.dataset.swalIcon || 'warning',
-            showCancelButton: true,
-            confirmButtonColor: button.dataset.swalColor || '#dc2626',
-            cancelButtonColor: '#6e7881',
-            confirmButtonText: button.dataset.swalConfirm || 'Sí, continuar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.submit();
-            }
-        });
-    }
-});
-</script>
-@endpush
+{{-- CORREGIDO: Eliminado el @push('scripts') duplicado que estaba aquí --}}

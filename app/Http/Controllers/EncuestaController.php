@@ -5,15 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Encuesta;
 use App\Models\Categoria;
 use App\Models\Pregunta;
-use App\Models\User; // <-- Lo mantenemos por si acaso, pero no es crítico aquí
+use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class EncuestaController extends Controller
 {
+    public function liberarResultados(Encuesta $encuesta)
+    {
+        $encuesta->update(['resultados_publicos' => true]);
 
-
+        return back()->with('success', '¡Resultados liberados! El público ya puede verlos.');
+    }
     /**
      * Vista pública de encuestas
      */
@@ -23,12 +28,29 @@ class EncuestaController extends Controller
                             ->with('preguntas') 
                             ->latest()
                             ->paginate(10);
+        
+        $usuario = Auth::user();
+        $userId = $usuario->pk_usuario;
+
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Buscamos todas las encuestas en las que este usuario ha participado
+        $encuestasRespondidas = DB::table('respuestas')
+            ->join('preguntas', 'respuestas.pregunta_id', '=', 'preguntas.id')
+            // CORREGIDO: Volvemos a 'user_id' (o el nombre que tengas en tu DB de 'respuestas')
+            ->where('respuestas.user_id', $userId) 
+            ->select('preguntas.encuesta_id')
+            ->distinct()
+            ->pluck('encuesta_id')
+            ->flip(); 
+        // --- FIN DE LA CORRECCIÓN ---
                             
         return view('users.encuestas', [
             'encuestas' => $encuestas,
-            'usuario' => Auth::user()
+            'usuario' => $usuario,
+            'encuestasRespondidas' => $encuestasRespondidas
         ]);
     }
+    
 
 
     // ==========================================================
@@ -48,13 +70,9 @@ class EncuestaController extends Controller
         return view('admin.encuestas.index', compact('encuestas', 'totalRespuestas', 'totalCategorias'));
     }
 
-    /**
-     * Mostrar formulario de creación
-     */
     public function create()
     {
         $categorias = Categoria::all();
-        // <-- CAMBIO: Ya no necesitamos pasar la lista de '$users'
         return view('admin.encuestas.create', compact('categorias'));
     }
 
@@ -63,7 +81,6 @@ class EncuestaController extends Controller
      */
     public function store(Request $request)
     {
-        // <-- CAMBIO: Validación SÚPER SIMPLIFICADA
         $request->validate([
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
@@ -72,7 +89,6 @@ class EncuestaController extends Controller
             'preguntas' => 'required|array|min:1',
             'preguntas.*.texto' => 'required|string',
             'preguntas.*.tipo' => 'required|in:nominados', 
-            // <-- CAMBIO: La validación de 'opciones' ha sido ELIMINADA
             
             'fecha_inicio' => 'nullable|date',
             'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
@@ -99,8 +115,6 @@ class EncuestaController extends Controller
                 'texto' => $preguntaData['texto'],
                 'tipo' => $preguntaData['tipo'], 
                 'orden' => $index,
-                // <-- CAMBIO: Guardamos un JSON vacío o nulo.
-                // La lógica de votación cargará a todos los usuarios.
                 'opciones' => json_encode([]), 
             ]);
         }
@@ -142,10 +156,6 @@ class EncuestaController extends Controller
     public function edit($id)
     {
         $encuesta = Encuesta::with('preguntas')->findOrFail($id);
-    
-        // <-- CAMBIO: Ya no necesitamos decodificar 'opciones_array'
-        // ni tampoco necesitamos pasar '$users'
-        
         $categorias = Categoria::all();
         
         return view('admin.encuestas.create', compact('encuesta', 'categorias'));
@@ -158,7 +168,6 @@ class EncuestaController extends Controller
     {
         $encuesta = Encuesta::findOrFail($id);
 
-        // <-- CAMBIO: Validación SÚPER SIMPLIFICADA
         $request->validate([
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
@@ -167,7 +176,6 @@ class EncuestaController extends Controller
             'preguntas' => 'required|array|min:1',
             'preguntas.*.texto' => 'required|string',
             'preguntas.*.tipo' => 'required|in:nominados', 
-            // <-- CAMBIO: La validación de 'opciones' ha sido ELIMINADA
             
             'fecha_inicio' => 'nullable|date',
             'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
@@ -191,7 +199,7 @@ class EncuestaController extends Controller
                 'texto' => $preguntaData['texto'],
                 'tipo' => $preguntaData['tipo'],
                 'orden' => $index,
-                'opciones' => json_encode([]), // <-- CAMBIO
+                'opciones' => json_encode([]), 
             ]);
         }
 

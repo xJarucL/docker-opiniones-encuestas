@@ -2,13 +2,12 @@
 
 @section('title', 'Gestión de Encuestas')
 
-{{-- Inclusión del CDN de SweetAlert2. Se usa @section('styles') porque a veces el @push('scripts')
-   se ejecuta demasiado tarde. Si tu layout lo permite, es mejor moverlo directamente al layout. --}}
+{{-- Inclusión del CDN de SweetAlert2. (Lo dejamos, aunque ya está en el layout) --}}
 @section('styles')
     @parent
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        /* Estilos de la alerta flotante */
+        /* ... (tus estilos de alerta flotante) ... */
         #mensaje {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100%); z-index: 9999;
             min-width: 250px; max-width: 90%; text-align: center; padding: 12px 20px; border-radius: 8px;
@@ -17,7 +16,6 @@
         }
         .success { background-color: #16a34a; }
         .error { background-color: #dc2626; }
-        /* Animaciones */
         @keyframes slideDown { from { transform: translateX(-50%) translateY(-100%); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
         @keyframes slideUp { from { transform: translateX(-50%) translateY(0); opacity: 1; } to { transform: translateX(-50%) translateY(-100%); opacity: 0; } }
     </style>
@@ -49,8 +47,6 @@
     <div class="mb-6 animate-fade-slide relative z-50" style="animation-delay: 0.1s;">
         <x-msj-alert />
     </div>
-
-    {{-- Bloque de Estadísticas Rápidas ELIMINADO --}}
 
     {{-- INICIO DEL CONTENEDOR DE LA TABLA Y LISTADO --}}
     <div class="bg-white rounded-2xl shadow-lg overflow-hidden animate-fade-slide" style="animation-delay: 0.2s;">
@@ -99,23 +95,23 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-    {{-- Usamos la columna real de la DB: 'estado' --}}
-    @if($encuesta->estado) 
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-            </svg>
-            Activa
-        </span>
-    @else
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-            </svg>
-            Inactiva
-        </span>
-    @endif
-</td>
+                                {{-- Usamos la columna real de la DB: 'estado' --}}
+                                @if($encuesta->estado) 
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Activa
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Inactiva
+                                    </span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm text-gray-600">{{ $encuesta->created_at->format('d/m/Y') }}</span>
                             </td>
@@ -155,6 +151,8 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
                                         </button>
+                                        {{-- CORREGIDO: Botón de submit oculto para el script de SweetAlert --}}
+                                        <button type="submit" class="hidden" data-swal-submit-button></button>
                                     </form>
                                 </div>
                             </td>
@@ -209,45 +207,6 @@
         }
     });
 
-    // Lógica para SweetAlert2 (maneja data-swal-form)
-    document.addEventListener('click', function (e) {
-        const button = e.target.closest('[data-swal-form]');
 
-        if (button) {
-            e.preventDefault();
-            
-            if (typeof Swal === 'undefined') {
-                console.error('SweetAlert2 no está cargado. El botón de eliminación no funcionará.');
-                // Fallback para al menos tener una confirmación si SweetAlert2 falla
-                const form = button.closest('form');
-                if (confirm(button.dataset.swalText || '¿Estás seguro de continuar?')) {
-                    form.submit();
-                }
-                return;
-            }
-            
-            const form = button.closest('form');
-            const swalTitle = button.dataset.swalTitle || '¿Estás seguro?';
-            const swalText = button.dataset.swalText || 'Esta acción no se puede revertir.';
-            const swalIcon = button.dataset.swalIcon || 'warning';
-            const swalConfirm = button.dataset.swalConfirm || 'Sí, eliminar';
-            const swalColor = button.dataset.swalColor || '#e53e3e';
-
-            Swal.fire({
-                title: swalTitle,
-                text: swalText,
-                icon: swalIcon,
-                showCancelButton: true,
-                confirmButtonColor: swalColor,
-                cancelButtonColor: '#6e7881', 
-                confirmButtonText: swalConfirm,
-                cancelButtonText: 'Cancelar' 
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit(); // ¡Envía el formulario DELETE!
-                }
-            });
-        }
-    });
 </script>
 @endpush

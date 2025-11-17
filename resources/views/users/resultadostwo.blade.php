@@ -36,7 +36,8 @@
                                 @endif
                             </div>
 
-                            <div class="respuesta-nombre">{{ $r->opcion ?? 'Sin respuesta' }}</div>
+                            {{-- LÍNEA CORREGIDA --}}
+                            <div class="respuesta-nombre">{{ $r->respuesta ?? 'Sin respuesta' }}</div>
 
                             <div class="bar-container">
                                 <div class="progress-bar" style="width: {{ $r->porcentaje }}%">

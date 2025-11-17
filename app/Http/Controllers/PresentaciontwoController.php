@@ -2,30 +2,75 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Encuesta; // <-- IMPORTANTE: Importa el modelo
+use App\Models\Pregunta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PresentaciontwoController extends Controller
 {
-    public function validar($id)
+    /**
+     * Revisa si los resultados de una encuesta son públicos.
+     * Si no lo son, redirige con un error.
+     */
+    private function verificarAccesoPublico($encuestaId)
     {
+        $encuesta = Encuesta::find($encuestaId);
+        
+        // Si no existe la encuesta O si los resultados NO están liberados
+        if (!$encuesta || !$encuesta->resultados_publicos) {
+            
+            // Asumo que tienes una ruta 'inicio' para el home público
+            return redirect()->route('inicio') 
+                         ->with('error', 'Los resultados de esta encuesta aún no están disponibles.');
+        }
+        
+        return $encuesta; // Devuelve la encuesta si todo está bien
+    }
+
+    /**
+     * Validar si hay preguntas y redirigir apropiadamente
+     */
+    public function validar($encuestaId)
+    {
+        // <<< INICIO DE LA GUARDIA
+        $encuesta = $this->verificarAccesoPublico($encuestaId);
+        if ($encuesta instanceof \Illuminate\Http\RedirectResponse) {
+            return $encuesta; // Redirige si no tiene acceso
+        }
+        // <<< FIN DE LA GUARDIA
+        
         $totalPreguntas = DB::table('preguntas')
-            ->where('encuesta_id', $id)
+            ->where('encuesta_id', $encuestaId)
             ->count();
 
-        if ($totalPreguntas > 1) {
-            return redirect()->route('presentacionone', $id);
-        } else {
-            return redirect()->route('presentacion', $id);
+        // Corrección: Redirige a ruta pública 'inicio', no a 'encuestas.index'
+        if ($totalPreguntas === 0) {
+            return redirect()->route('inicio') 
+                ->with('error', 'Esta encuesta no tiene preguntas disponibles.');
         }
+
+        $primeraPregunta = Pregunta::where('encuesta_id', $encuestaId)
+                                     ->orderBy('orden', 'asc')
+                                     ->first();
+
+        // Si solo hay 1 pregunta, ir directo a votar (esta ruta debe ser pública)
+        if ($totalPreguntas === 1) {
+            return redirect()->route('presentacion', ['preguntaId' => $primeraPregunta->id]);
+        }
+
+        // Si hay múltiples preguntas, mostrar la pantalla de inicio
+        return redirect()->route('presentacionone', ['encuestaId' => $encuestaId]);
     }
 
     public function index($encuestaId)
     {
-        $encuesta = DB::table('encuestas')
-            ->select('titulo')
-            ->where('id', $encuestaId)
-            ->first();
+        // <<< INICIO DE LA GUARDIA
+        $encuesta = $this->verificarAccesoPublico($encuestaId);
+        if ($encuesta instanceof \Illuminate\Http\RedirectResponse) {
+            return $encuesta;
+        }
+        // <<< FIN DE LA GUARDIA
 
         $tituloEncuesta = $encuesta->titulo ?? 'Nominados';
 
@@ -34,6 +79,13 @@ class PresentaciontwoController extends Controller
 
     public function inicio($encuestaId, $preguntaIndex)
     {
+        // <<< INICIO DE LA GUARDIA
+        $encuesta = $this->verificarAccesoPublico($encuestaId);
+        if ($encuesta instanceof \Illuminate\Http\RedirectResponse) {
+            return $encuesta;
+        }
+        // <<< FIN DE LA GUARDIA
+
         $preguntas = DB::table('preguntas')
             ->where('encuesta_id', $encuestaId)
             ->orderBy('id')
@@ -56,6 +108,13 @@ class PresentaciontwoController extends Controller
 
     public function podio($encuestaId, $preguntaIndex)
     {
+        // <<< INICIO DE LA GUARDIA
+        $encuesta = $this->verificarAccesoPublico($encuestaId);
+        if ($encuesta instanceof \Illuminate\Http\RedirectResponse) {
+            return $encuesta;
+        }
+        // <<< FIN DE LA GUARDIA
+
         $preguntas = DB::table('preguntas')
             ->where('encuesta_id', $encuestaId)
             ->orderBy('id')
@@ -66,18 +125,16 @@ class PresentaciontwoController extends Controller
         }
 
         $pregunta = $preguntas[$preguntaIndex];
-
-        // Obtener el total de votos para esta pregunta
+        
+        // --- (Tu lógica de $totalVotos, $topRespuestas, $resultados... no cambia) ---
         $totalVotos = DB::table('respuestas')
             ->where('pregunta_id', $pregunta->id)
+            ->whereNotNull('respuesta')
+            ->where('respuesta', '!=', '')
             ->count();
 
-        // CORREGIDO: Usar el campo 'respuesta' en lugar de 'texto'
         $topRespuestas = DB::table('respuestas')
-            ->select(
-                'respuesta',
-                DB::raw('COUNT(*) as total')
-            )
+            ->select('respuesta', DB::raw('COUNT(*) as total'))
             ->where('pregunta_id', $pregunta->id)
             ->whereNotNull('respuesta')
             ->where('respuesta', '!=', '')
@@ -86,7 +143,6 @@ class PresentaciontwoController extends Controller
             ->limit(3)
             ->get();
 
-        // Calcular porcentajes y convertir a array
         $resultados = $topRespuestas->map(function($item) use ($totalVotos) {
             $item->porcentaje = $totalVotos > 0 
                 ? round(($item->total / $totalVotos) * 100, 2) 
@@ -95,10 +151,7 @@ class PresentaciontwoController extends Controller
         })->values()->all();
 
         $hayMasPreguntas = ($preguntaIndex + 1) < $preguntas->count();
-
-        // DEBUG: Ver qué datos se están enviando (QUITAR DESPUÉS DE PROBAR)
-        dd($resultados);
-
+        
         return view('users.podiotwo', compact(
             'encuestaId',
             'preguntaIndex',
@@ -110,30 +163,35 @@ class PresentaciontwoController extends Controller
 
     public function resultados($encuestaId)
     {
-        $encuesta = DB::table('encuestas')
-            ->select('titulo')
-            ->where('id', $encuestaId)
-            ->first();
+        // <<< INICIO DE LA GUARDIA
+        $encuesta = $this->verificarAccesoPublico($encuestaId);
+        if ($encuesta instanceof \Illuminate\Http\RedirectResponse) {
+            return $encuesta;
+        }
+        // <<< FIN DE LA GUARDIA
 
         $tituloEncuesta = $encuesta->titulo ?? 'Resultados';
 
-        // CORREGIDO: Usar el campo 'respuesta' en lugar de 'texto'
+        // --- (Tu consulta $allResultados no cambia) ---
         $allResultados = DB::select("
             SELECT 
-                p.id AS pregunta_id,
-                p.texto AS pregunta,
-                r.respuesta AS respuesta,
+                p.id AS pregunta_id, p.texto AS pregunta, r.respuesta AS opcion,
                 COUNT(r.id) AS total_votos,
                 ROUND(
                     COUNT(r.id) * 100.0 / NULLIF(
-                        (SELECT COUNT(*) FROM respuestas r2 WHERE r2.pregunta_id = p.id),
+                        (SELECT COUNT(*) 
+                         FROM respuestas r2 
+                         WHERE r2.pregunta_id = p.id
+                           AND r2.respuesta IS NOT NULL 
+                           AND r2.respuesta != ''), 
                         0
-                    ),
-                    2
+                    ), 2
                 ) AS porcentaje
             FROM preguntas p
             LEFT JOIN respuestas r ON p.id = r.pregunta_id
             WHERE p.encuesta_id = ?
+              AND r.respuesta IS NOT NULL
+              AND r.respuesta != ''
             GROUP BY p.id, p.texto, r.respuesta
             ORDER BY p.id, total_votos DESC
         ", [$encuestaId]);

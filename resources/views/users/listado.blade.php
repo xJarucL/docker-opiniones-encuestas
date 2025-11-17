@@ -1,4 +1,4 @@
-@extends('admin.admin-layout')
+@extends('admin.admin-layout') {{-- ⬅️ CRUCIAL: Se mantiene el layout de administración --}}
 
 @section('title', 'Usuarios')
 
@@ -19,7 +19,8 @@
                 <h1 class="text-2xl font-bold text-gray-800">Usuarios</h1>
             </div>
 
-            <a href="{{ route('usuarios.registro') }}" {{-- Ruta de registro --}}
+            {{-- RUTA CORREGIDA: Se añadió 'admin.' al nombre de la ruta --}}
+            <a href="{{ route('admin.usuarios.registro') }}" 
             class="flex items-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg shadow transition-colors duration-200 font-semibold">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -65,7 +66,7 @@
                                 <td class="px-6 py-4">{{ $usuario->email }}</td>
                                 <td class="px-6 py-4 relative">
                                     {{-- Dropdown de Alpine.js para cambiar tipo de usuario --}}
-                                    <form action="{{ route('usuarios.cambiar-tipo', $usuario->pk_usuario) }}" method="POST" x-data="{ open: false }" @click.outside="open = false">
+                                    <form action="{{ route('admin.usuarios.cambiar-tipo', $usuario->pk_usuario) }}" method="POST" x-data="{ open: false }" @click.outside="open = false">
                                         @csrf
                                         @method('PUT')
                                         <div class="relative w-48">
@@ -100,7 +101,7 @@
                                     <div class="flex space-x-2">
                                         @if ($usuario->trashed())
                                             {{-- Botón RESTAURAR --}}
-                                            <form action="{{ route('usuarios.restaurar', $usuario->pk_usuario) }}" method="POST">
+                                            <form action="{{ route('admin.usuarios.restaurar', $usuario->pk_usuario) }}" method="POST">
                                                 @csrf
                                                 <button type="button"
                                                      data-swal-form data-swal-title="¿Restaurar este usuario?" data-swal-confirm="Sí, restaurar" data-swal-color="#38a169"
@@ -108,7 +109,6 @@
                                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10v11h11m4-4l5 5m-5-5v5h5"/></svg>
                                                     Restaurar
                                                 </button>
-                                                {{-- BOTÓN OCULTO AÑADIDO --}}
                                                 <button type="submit" class="hidden" data-swal-submit-button></button>
                                             </form>
                                         @else
@@ -120,7 +120,7 @@
                                             </a>
 
                                             {{-- Botón DESHABILITAR --}}
-                                            <form action="{{ route('usuarios.eliminar', $usuario->pk_usuario) }}" method="POST">
+                                            <form action="{{ route('admin.usuarios.eliminar', $usuario->pk_usuario) }}" method="POST">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="button"
@@ -129,7 +129,6 @@
                                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4a2 2 0 012 2v2H8V5a2 2 0 012-2z"/></svg>
                                                     Deshabilitar
                                                 </button>
-                                                {{-- BOTÓN OCULTO AÑADIDO --}}
                                                 <button type="submit" class="hidden" data-swal-submit-button></button>
                                             </form>
                                         @endif
@@ -147,14 +146,14 @@
         </div>
 
         <div class="mt-6 flex justify-end">
-            @if (request()->routeIs('usuarios.lista')) {{-- Ruta corregida --}}
-                <a href="{{ route('usuarios.inactivos') }}" {{-- Ruta corregida --}}
+            @if (request()->routeIs('admin.usuarios.lista')) {{-- Ruta corregida --}}
+                <a href="{{ route('admin.usuarios.inactivos') }}" {{-- Ruta corregida --}}
                 class="flex items-center bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow transition-colors duration-200">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4a2 2 0 012 2v2H8V5a2 2 0 012-2z"/></svg>
                     Ver usuarios inactivos
                 </a>
-            @elseif (request()->routeIs('usuarios.inactivos')) {{-- Ruta corregida --}}
-                <a href="{{ route('usuarios.lista') }}" {{-- Ruta corregida --}}
+            @elseif (request()->routeIs('admin.usuarios.inactivos')) {{-- Ruta corregida --}}
+                <a href="{{ route('admin.usuarios.lista') }}" {{-- Ruta corregida --}}
                 class="flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow transition-colors duration-200">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     Ver usuarios activos
@@ -164,5 +163,3 @@
 
     </div>
 @endsection
-
-{{-- EL BLOQUE @push('scripts') HA SIDO ELIMINADO DE AQUÍ --}}

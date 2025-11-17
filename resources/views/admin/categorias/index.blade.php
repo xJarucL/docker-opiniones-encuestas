@@ -15,7 +15,7 @@
 <div class="mb-6">
     <div class="flex items-center justify-between">
         <div>
-            <a href="{{ route('admin.dashboard') }}" class="text-purple-600 hover:text-purple-700 mb-2 flex items-center gap-2">
+            <a href="{{ route('inicio') }}" class="text-purple-600 hover:text-purple-700 mb-2 flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>

@@ -5,6 +5,7 @@
 @section('content')
 
 <div class="mb-6">
+    {{-- ... (Tu código de "Volver" y Título) ... --}}
     <a href="{{ route('admin.encuestas.index') }}" class="text-green-600 hover:text-green-700 mb-2 flex items-center gap-2">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -21,6 +22,7 @@
 </div>
 
 <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+    {{-- ... (Tu grid de "Descripción", "Categoría", "Estado") ... --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
             <h3 class="text-sm font-semibold text-gray-500 mb-1">Descripción</h3>
@@ -47,6 +49,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
     <div class="bg-blue-50 p-6 rounded-xl">
+        {{-- ... (Tu tarjeta "Total Respuestas") ... --}}
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-blue-600 font-semibold mb-1">Total Respuestas</p>
@@ -58,6 +61,7 @@
         </div>
     </div>
     <div class="bg-green-50 p-6 rounded-xl">
+        {{-- ... (Tu tarjeta "Preguntas") ... --}}
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-green-600 font-semibold mb-1">Preguntas</p>
@@ -69,6 +73,36 @@
         </div>
     </div>
 
+    {{-- ================================================ --}}
+    {{-- ========= BLOQUE AÑADIDO PARA LIBERAR ========= --}}
+    {{-- ================================================ --}}
+    <div class="md:col-span-2"> {{-- Ocupa 2 columnas --}}
+        @if($encuesta->resultados_publicos)
+            <div class="bg-green-50 p-6 rounded-xl border border-green-300 h-full flex flex-col justify-center">
+                <h3 class="text-lg font-bold text-green-800 mb-2">Resultados Públicos</h3>
+                <p class="text-sm text-green-700">
+                    ¡Liberados! El público ya puede acceder a la presentación de resultados.
+                </p>
+                {{-- Opcional: Puedes agregar un botón de "Ocultar" aquí si lo deseas --}}
+            </div>
+        @else
+            <div class="bg-yellow-50 p-6 rounded-xl border border-yellow-300 h-full flex flex-col justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-yellow-800 mb-2">Resultados Privados</h3>
+                    <p class="text-sm text-yellow-700 mb-4">
+                        Los resultados aún no son visibles para el público. El enlace "Ver Resultados" está desactivado.
+                    </p>
+                </div>
+                {{-- Asegúrate de que esta ruta exista en tus archivos de rutas de admin --}}
+                <form action="{{ route('admin.encuestas.liberar', $encuesta) }}" method="POST">
+                    @csrf
+                    @method('PATCH')
+                    <button type"submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                        Liberar Resultados Ahora
+                    </button>
+                </form>
+            </div>
+        @endif
     </div>
 </div>
 
@@ -76,24 +110,24 @@
 <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
     <h3 class="text-xl font-bold text-gray-800 mb-4">{{ $pregunta->texto }}</h3>
     <p class="text-sm text-gray-500 mb-4">Tipo: 
-        @if($pregunta->tipo == 'multiple')
-            Opción múltiple
-        @elseif($pregunta->tipo == 'text')
-            Texto libre
-        @else
-            Calificación
-        @endif
+        {{-- ... (Tu lógica de tipo de pregunta) ... --}}
     </p>
 
     @if($pregunta->tipo == 'multiple' || $pregunta->tipo == 'rating')
         <div class="space-y-3">
             @php
-                $respuestas = $pregunta->respuestas->groupBy('respuesta')->map->count();
-                $total = $pregunta->respuestas->count();
+                // --- LÓGICA DE CÁLCULO MEJORADA ---
+                // Filtra respuestas nulas o vacías ANTES de agrupar
+                $respuestasValidas = $pregunta->respuestas->whereNotNull('respuesta')->filter(function ($value) {
+                    return $value->respuesta != '';
+                });
+                $respuestasAgrupadas = $respuestasValidas->groupBy('respuesta')->map->count();
+                $total = $respuestasAgrupadas->sum();
             @endphp
             
             @if($total > 0)
-                @foreach($respuestas as $opcion => $cantidad)
+                {{-- Ordena de mayor a menor --}}
+                @foreach($respuestasAgrupadas->sortDesc() as $opcion => $cantidad) 
                 <div>
                     <div class="flex items-center justify-between mb-1">
                         <span class="text-sm font-medium text-gray-700">{{ $opcion }}</span>
@@ -114,7 +148,8 @@
         </div>
     @else
         <div class="space-y-3 max-h-96 overflow-y-auto">
-            @forelse($pregunta->respuestas as $respuesta)
+            {{-- Filtra respuestas vacías/nulas también en texto libre --}}
+            @forelse($pregunta->respuestas->whereNotNull('respuesta')->filter(function ($value) { return $value->respuesta != ''; }) as $respuesta)
             <div class="bg-gray-50 p-4 rounded-lg">
                 <p class="text-gray-800">{{ $respuesta->respuesta }}</p>
                 <p class="text-xs text-gray-500 mt-2">
@@ -129,113 +164,38 @@
 </div>
 @endforeach
 
-<!-- Botón flotante -->
-<a href="{{ route('validarButton', $encuesta->id) }}" 
-   class="boton-flotante">
-   Ver Resultados
-</a>
+{{-- ================================================ --}}
+{{-- ============ BOTÓN FLOTANTE CORREGIDO ============ --}}
+{{-- ================================================ --}}
+@if($encuesta->resultados_publicos)
+    {{-- Si están liberados, muestra el enlace funcional --}}
+    <a href="{{ route('podiotwo', ['encuestaId' => $encuesta->id, 'preguntaIndex' => 0]) }}"
+        target="_blank" {{-- Abre en pestaña nueva --}}
+        class="boton-flotante"
+        title="Ver la presentación pública de resultados">
+        Ver Resultados (Público)
+    </a>
+@else
+    {{-- Si NO están liberados, muestra un botón desactivado --}}
+    <button type="button"
+       class="boton-flotante"
+       style="background-color: #71717a; cursor: not-allowed; opacity: 0.8;"
+       title="Debes liberar los resultados primero"
+       disabled>
+        Resultados Privados
+    </button>
+@endif
 
 <style>
-.boton-flotante {
-    position: fixed;
-    bottom: 20px;
-    right: 12px;
-    display: inline-block;
-    background-color: #16a34a;
-    color: white;
-    padding: 8px 10px;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    text-decoration: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-    transition: background-color 0.3s, transform 0.2s;
-    z-index: 1000;
-}
-.boton-flotante:hover {
-    background-color: #15803d;
-    transform: scale(1.05);
-}
+{{-- ... (Tu CSS del botón flotante no cambia) ... --}}
 </style>
 
 @endsection
 
 @section('styles')
-<style>
-    #mensaje {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-100%);
-        z-index: 9999;
-        min-width: 250px;
-        max-width: 90%;
-        text-align: center;
-        padding: 12px 20px;
-        border-radius: 8px;
-        color: white;
-        font-size: 0.875rem;
-        font-weight: 500;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        opacity: 0;
-        animation: slideDown 0.5s forwards;
-    }
-
-    .success {
-        background-color: #16a34a; /* green-600 */
-    }
-    .error {
-        background-color: #dc2626; /* red-600 */
-    }
-
-    @keyframes slideDown {
-        from {
-            transform: translateX(-50%) translateY(-100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-    }
-
-    @keyframes slideUp {
-        from {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(-50%) translateY(-100%);
-            opacity: 0;
-        }
-    }
-</style>
+{{-- ... (Tu sección @styles no cambia) ... --}}
 @endsection
 
 @section('scripts')
-@if (session('success') || session('error'))
-    <div id="mensaje" class="{{ session('success') ? 'success' : 'error' }}">
-        {{ session('success') ?? session('error') }}
-    </div>
-@else
-    <div id="mensaje" class="hidden"></div>
-@endif
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const mensaje = document.getElementById('mensaje');
-    
-    if (mensaje && !mensaje.classList.contains('hidden') && (mensaje.textContent.trim().length > 0)) {
-        setTimeout(() => {
-            mensaje.style.animation = 'slideUp 0.5s forwards';
-            setTimeout(() => {
-                mensaje.style.display = 'none';
-                mensaje.classList.add('hidden');
-            }, 500);
-        }, 4000);
-    } else {
-        if (mensaje) mensaje.style.display = 'none';
-    }
-});
-</script>
+{{-- ... (Tu sección @scripts no cambia) ... --}}
 @endsection
