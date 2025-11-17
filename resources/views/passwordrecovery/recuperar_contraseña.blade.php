@@ -1,4 +1,5 @@
 @vite(['resources/css/app.css', 'resources/js/app.js'])
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 <div class="min-h-screen w-full flex flex-col items-center justify-center
             bg-purple-800 px-4 py-8 space-y-6">
