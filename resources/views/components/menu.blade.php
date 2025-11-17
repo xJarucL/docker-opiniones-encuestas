@@ -4,7 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Opiniones y Encuestas')</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'Opiniones y Encuestas')</title>
+    
+    {{-- CDN de Tailwind --}}
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    {{-- CDN de jQuery --}}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    {{-- CDN de Alpine.js --}}
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    
+    {{-- CDN de SweetAlert2 --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    {{-- CSS y JS locales (después de copiar a public/) --}}
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <script src="{{ asset('js/app.js') }}" defer></script>
     
     {{-- SCRIPTS AÑADIDOS --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -133,4 +153,4 @@
 
     @stack('scripts')
 </body>
-</html>          
+</html>
