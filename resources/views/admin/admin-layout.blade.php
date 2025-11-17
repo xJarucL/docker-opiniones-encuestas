@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Panel Administrativo')</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    {{-- 1. Scripts/CSS de Vite --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <script src="{{ asset('js/app.js') }}" defer></script>
+    <script src="{{ asset('js/funciones.js') }}" defer></script>
+    <script src="{{ asset('js/sweetalert.js') }}" defer></script>
     
     {{-- 2. SweetAlert2 CDN --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

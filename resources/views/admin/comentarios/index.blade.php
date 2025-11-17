@@ -73,7 +73,6 @@
                     <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase">Comentario</th>
                     <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase">En Perfil de</th>
                     <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase">Fecha</th>
-                    <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase">Estado</th>
                     <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase">Acciones</th>
                 </tr>
             </thead>
@@ -97,50 +96,9 @@
                         <td class="p-4 align-top text-sm text-gray-600">
                             {{ $comentario->fecha_creacion->format('d/m/Y H:i') }}
                         </td>
-                        <td class="p-4 align-top">
-                            {{-- CORREGIDO: Añadido el estado (visible/oculto) que faltaba en el HTML original --}}
-                            @if ($comentario->estatus == 1)
-                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">Visible</span>
-                            @else
-                                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold">Oculto</span>
-                            @endif
-                        </td>
+                        
                         <td class="p-4 align-top">
                             <div class="flex gap-2">
-                                {{-- CORREGIDO: Lógica de Ocultar/Mostrar ahora usa SweetAlert --}}
-                                @if ($comentario->estatus == 1)
-                                    <form action="{{ route('admin.comentarios.hide', $comentario->pk_comentario) }}" method="POST">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="button" 
-                                                data-swal-form
-                                                data-swal-title="¿Ocultar Comentario?"
-                                                data-swal-icon="warning"
-                                                data-swal-confirm="Sí, ocultar"
-                                                data-swal-color="#f59e0b"
-                                                title="Ocultar" class="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .97-3.031 4.27-5.7 8.15-6.222C11.104 5.318 11.55 5 12 5c.45 0 .896.318 1.303.8A10.05 10.05 0 0121.542 12c-.229.706-.5 1.383-.816 2.025M12 15a3 3 0 100-6 3 3 0 000 6z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1l22 22"></path></svg>
-                                        </button>
-                                        <button type="submit" class="hidden" data-swal-submit-button></button>
-                                    </form>
-                                @else
-                                    {{-- CORREGIDO: Lógica de "Mostrar" añadida --}}
-                                    <form action="{{ route('admin.comentarios.show', $comentario->pk_comentario) }}" method="POST">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="button" 
-                                                data-swal-form
-                                                data-swal-title="¿Mostrar Comentario?"
-                                                data-swal-icon="question"
-                                                data-swal-confirm="Sí, mostrar"
-                                                data-swal-color="#10b981"
-                                                title="Mostrar" class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-.97 3.031 4.27 5.7-8.15 6.222C6.88 18.92 3.06 16.3 2.458 12z"></path></svg>
-                                        </button>
-                                        <button type="submit" class="hidden" data-swal-submit-button></button>
-                                    </form>
-                                @endif
-                                
                                 {{-- CORREGIDO: Formulario de "Eliminar" ahora usa el botón oculto --}}
                                 <form action="{{ route('admin.comentarios.destroy', $comentario->pk_comentario) }}" method="POST">
                                     @csrf
