@@ -472,11 +472,21 @@
 
 
     <!-- Botón ver resultados -->
-    <a href="{{ route('resultados', ['preguntaId' => $preguntaId]) }}" 
-       id="verResultadosBtn" 
-       class="ver-resultados-btn">
-         Ver Resultados 
-    </a>
+    @if($siguientePregunta)
+        {{-- Si hay una siguiente pregunta, enlaza a la animación de esa pregunta --}}
+        <a href="{{ route('presentacion.completa', ['encuestaId' => $siguientePregunta->encuesta_id, 'preguntaId' => $siguientePregunta->id]) }}" 
+           id="verResultadosBtn" 
+           class="ver-resultados-btn">
+           Siguiente Pregunta
+        </a>
+    @else
+        {{-- Si es la última, enlaza a la vista de resultados finales (la de 'PresentaciontwoController') --}}
+        <a href="{{ route('resultadostwo', ['encuestaId' => $encuestaId]) }}" 
+           id="verResultadosBtn" 
+           class="ver-resultados-btn">
+           Ver Resumen Final
+        </a>
+    @endif
 
     <script>
         const envelopeWrapper = document.getElementById('envelopeWrapper');
