@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Administrativo</title>
-    
     {{-- Cargamos TailwindCSS desde el CDN --}}
     <script src="https://cdn.tailwindcss.com"></script>
     
-    {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}} {{-- Eliminado: No es necesario si usas el CDN --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <style>
         @keyframes fade-slide {
