@@ -51,7 +51,7 @@ class PresentaciontwoController extends Controller
         }
 
         $primeraPregunta = Pregunta::where('encuesta_id', $encuestaId)
-                                     ->orderBy('orden', 'asc')
+                                     ->orderBy('id', 'asc')
                                      ->first();
 
         // Si solo hay 1 pregunta, ir directo a votar (esta ruta debe ser pública)
@@ -198,6 +198,25 @@ class PresentaciontwoController extends Controller
 
         $resultados = collect($allResultados)->groupBy('pregunta_id');
 
-        return view('users.resultadostwo', compact('resultados', 'tituloEncuesta', 'encuestaId'));
+        // --- INICIO DE LA CORRECCIÓN ---
+        
+        // 1. Buscar la primera pregunta de esta encuesta ordenando por ID
+        $primeraPregunta = DB::table('preguntas')
+                            ->where('encuesta_id', $encuestaId)
+                            ->orderBy('id', 'asc') // <-- CORREGIDO
+                            ->first();
+        
+        // 2. Definir la variable (será null si no hay preguntas)
+        $primeraPreguntaId = $primeraPregunta ? $primeraPregunta->id : null;
+        
+        // --- FIN DE LA CORRECCIÓN ---
+
+        // 3. Pasar la variable a la vista
+        return view('users.resultadostwo', compact(
+            'resultados', 
+            'tituloEncuesta', 
+            'encuestaId',
+            'primeraPreguntaId' // <-- LA VARIABLE AHORA SE ESTÁ ENVIANDO
+        ));
     }
 }

@@ -1,9 +1,4 @@
-// ============================================
-// app.js - Versión SIN imports (para public/)
-// ============================================
 
-// jQuery y Alpine ya están disponibles globalmente desde los CDNs
-// No necesitamos importarlos
 
 document.addEventListener('DOMContentLoaded', () => {
 
