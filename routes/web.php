@@ -130,19 +130,23 @@ Route::middleware(['auth'])->group(function () {
 
         // USUARIOS
         Route::prefix('usuarios')->name('usuarios.')->group(function () {
-            Route::get('/', [UserController::class, 'listaUsuarios'])->name('lista');
-            Route::get('/inactivos', [UserController::class, 'listaUsuarios_inactivos'])->name('inactivos');
+    Route::get('/', [UserController::class, 'listaUsuarios'])->name('lista');
+    Route::get('/inactivos', [UserController::class, 'listaUsuarios_inactivos'])->name('inactivos');
 
-            Route::get('/registro', function () {
-                $tipos_usuario = \App\Models\Tipo_usuario::all();
-                return view('users.formulario', ['usuario' => null, 'tipos_usuario' => $tipos_usuario]);
-            })->name('registro');
+    // Ruta para MOSTRAR el formulario de registro (GET)
+    Route::get('/registro', function () {
+        $tipos_usuario = \App\Models\Tipo_usuario::all();
+        return view('users.formulario', ['usuario' => null, 'tipos_usuario' => $tipos_usuario]);
+    })->name('registro');
 
-            Route::post('/guardar', [UserController::class, 'guardarUsuario'])->name('guardar');
-            Route::put('/cambiar-tipo/{id}', [UserController::class, 'cambiarTipo'])->name('cambiar-tipo');
-            Route::delete('/eliminar/{id}', [UserController::class, 'eliminar'])->name('eliminar');
-            Route::post('/restaurar/{id}', [UserController::class, 'restaurar'])->name('restaurar');
-            Route::delete('/eliminar-permanente/{id}', [UserController::class, 'eliminarPermanente'])->name('eliminar-permanente');
-        });
+    // IMPORTANTE: Esta ruta debe estar DENTRO del grupo admin.usuarios
+    // para que coincida con route('admin.usuarios.guardar')
+    Route::post('/guardar', [UserController::class, 'guardarUsuario'])->name('guardar');
+    
+    Route::put('/cambiar-tipo/{id}', [UserController::class, 'cambiarTipo'])->name('cambiar-tipo');
+    Route::delete('/eliminar/{id}', [UserController::class, 'eliminar'])->name('eliminar');
+    Route::post('/restaurar/{id}', [UserController::class, 'restaurar'])->name('restaurar');
+    Route::delete('/eliminar-permanente/{id}', [UserController::class, 'eliminarPermanente'])->name('eliminar-permanente');
+});
     });
 });
