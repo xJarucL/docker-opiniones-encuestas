@@ -6,18 +6,24 @@ use App\Models\User;
 use App\Models\Tipo_usuario;
 use App\Models\Comentario;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
+use App\Services\UserService;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
-    public function login(Request $request){
+    protected $service;
 
+    public function __construct(UserService $service){
+        $this->service = $service;
+    }
+
+    public function login(Request $request){
         $request->validate([
             'email' => 'required|string',
             'password' => 'required|string',
@@ -25,63 +31,39 @@ class UserController extends Controller
 
         $usuario = User::where('email', $request->email)->first();
 
-
         if ($usuario && Hash::check($request->password, $usuario->password)) {
             Auth::login($usuario);
 
-            // --- CORRECCIÓN ---
-            // Todos los usuarios se redirigen a la misma ruta 'inicio'.
-            // El método dashboard() se encargará de decidir qué mostrar.
             return response()->json([
                 'mensaje' => '¡Inicio de sesión exitoso!',
-                'ruta' => route('inicio'), 
+                'ruta' => route('inicio'),
                 'class' => 'success'
             ]);
-
-        } else {
-            return response()->json([
-                'mensaje' => 'Credenciales incorrectas.',
-                'class' => 'error'
-            ], 422);
         }
+
+        return response()->json([
+            'mensaje' => 'Credenciales incorrectas.',
+            'class' => 'error'
+        ], 422);
     }
 
-    /**
-     * Muestra el panel de control (dashboard) correcto según el rol del usuario.
-     */
-    public function dashboard()
-    {
+    public function dashboard(){
         $usuario = auth()->user();
 
-        // --- CORRECCIÓN ---
-        // Comprobar el tipo de usuario
         if ($usuario->fk_tipo_user == 1) {
-            // Si es ADMIN (Tipo 1)
-            // Cargar datos para el dashboard de admin
-            $totalUsuarios = \App\Models\User::count();
-            $totalComentarios = \App\Models\Comentario::count();
-            // (Asumiendo que tienes un modelo Encuesta o usamos DB)
-            $totalEncuestas = \Illuminate\Support\Facades\DB::table('encuestas')->count();
-
-            // Retornar la VISTA de admin
             return view('admin.dashboard', [
                 'usuario' => $usuario,
-                'totalUsuarios' => $totalUsuarios,
-                'totalComentarios' => $totalComentarios,
-                'totalEncuestas' => $totalEncuestas
-            ]);
-            
-        } else {
-            // Si es USUARIO NORMAL (Tipo 2 o cualquier otro)
-            // Retornar la VISTA de usuario normal
-            return view('users.dashboard', [
-                'usuario' => $usuario
+                'totalUsuarios' => User::count(),
+                'totalComentarios' => Comentario::count(),
+                'totalEncuestas' => DB::table('encuestas')->count()
             ]);
         }
+
+        return view('users.dashboard', compact('usuario'));
     }
 
     public function listaUsuarios(){
-         $usuarios = User::with('tipo_usuario')->paginate(10);
+        $usuarios = User::with('tipo_usuario')->paginate(10);
         $tipos_usuario = Tipo_usuario::all();
 
         return view('users.listado', compact('usuarios', 'tipos_usuario'));
@@ -100,17 +82,23 @@ class UserController extends Controller
     }
 
     public function eliminar($id){
-        $usuario = User::findOrFail($id);
-        $usuario->delete();
+        try {
+            $this->service->deleteUser($id);
 
-        return redirect()->route('admin.usuarios.lista')->with('success', 'Usuario eliminado correctamente.');
+            return redirect()->route('admin.usuarios.lista')
+                            ->with('success', 'Usuario eliminado correctamente.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function restaurar($id){
         $usuario = User::withTrashed()->findOrFail($id);
         $usuario->restore();
 
-        return redirect()->route('admin.usuarios.inactivos')->with('success', 'Usuario restaurado correctamente.');
+        return redirect()
+            ->route('admin.usuarios.inactivos')
+            ->with('success', 'Usuario restaurado correctamente.');
     }
 
     public function listaUsuarios_inactivos(){
@@ -121,128 +109,106 @@ class UserController extends Controller
     }
 
     public function guardarUsuario(Request $request){
-    $isEdit = $request->filled('id');
+        $isEdit = $request->filled('id');
 
-    $emailRule = $isEdit
-        ? 'required|email|unique:users,email,' . $request->id . ',pk_usuario'
-        : 'required|email|unique:users,email';
+        $emailRule = $isEdit
+            ? 'required|email|unique:users,email,' . $request->id . ',pk_usuario'
+            : 'required|email|unique:users,email';
 
-    $reglas = [
-        'username'   => 'required|string|max:255',
-        'nombres'    => 'required|string|max:255',
-        'ap_paterno' => 'required|string|max:255',
-        'ap_materno' => 'nullable|string|max:255',
-        'email'      => $emailRule,
-        'img_user'   => 'nullable|image|max:2048',
-    ];
+        $reglas = [
+            'username'   => 'required|string|max:255',
+            'nombres'    => 'required|string|max:255',
+            'ap_paterno' => 'required|string|max:255',
+            'ap_materno' => 'nullable|string|max:255',
+            'email'      => $emailRule,
+            'img_user'   => 'nullable|image|max:2048',
+        ];
 
-    if (!$isEdit || $request->filled('password')) {
-        $reglas['password'] = 'required|string|min:6';
-    }
-
-    // Validar
-    $validator = Validator::make($request->all(), $reglas);
-    
-    if ($validator->fails()) {
-        return response()->json([
-            'mensaje' => $validator->errors(),
-            'class' => 'error'
-        ], 422);
-    }
-
-    try {
-        $usuario = $isEdit
-            ? User::findOrFail($request->id)
-            : new User();
-
-        $usuario->username   = $request->username;
-        $usuario->nombres    = $request->nombres;
-        $usuario->ap_paterno = $request->ap_paterno;
-        $usuario->ap_materno = $request->ap_materno;
-        $usuario->email      = $request->email;
-
-        if ($request->filled('password')) {
-            $usuario->password = Hash::make($request->password);
+        if (!$isEdit || $request->filled('password')) {
+            $reglas['password'] = 'required|string|min:6';
         }
 
-        if ($request->hasFile('img_user')) {
-            if ($isEdit && $usuario->img_user && Storage::disk('public')->exists($usuario->img_user)) {
-                Storage::disk('public')->delete($usuario->img_user);
+        $validator = Validator::make($request->all(), $reglas);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'mensaje' => $validator->errors(),
+                'class' => 'error'
+            ], 422);
+        }
+
+        $data = $request->all();
+        $file = $request->file('img_user');
+
+        try {
+            $usuario = null;
+            if ($isEdit) {
+                $usuario = User::findOrFail($request->id);
             }
 
-            $file = $request->file('img_user');
-            $filename = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('usuarios', $filename, 'public');
-            $usuario->img_user = $path;
+            $this->service->saveModel($data, $usuario, $file);
+
+            return response()->json([
+                'mensaje' => $isEdit ? 'Usuario actualizado correctamente.' : 'Usuario registrado correctamente.',
+                'class' => 'success',
+                'ruta' => route('admin.usuarios.lista')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'mensaje' => 'Error al guardar el usuario: ' . $e->getMessage(),
+                'class' => 'error'
+            ], 422);
         }
-
-        if (!$isEdit) {
-            $usuario->remember_token = Str::random(10);
-            $usuario->fk_tipo_user = 2;
-        }
-
-        $usuario->save();
-
-        return response()->json([
-            'mensaje' => $isEdit ? 'Usuario actualizado correctamente.' : 'Usuario registrado correctamente.',
-            'class' => 'success',
-            'ruta' => route('admin.usuarios.lista')
-        ]);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'mensaje' => 'Error al guardar el usuario: ' . $e->getMessage(),
-            'class' => 'error'
-        ], 500);
     }
-}
 
-public function edit($id){
-    $usuario = User::findOrFail($id);
-    return view('users.formulario', compact('usuario'));
-}
 
-public function logout(Request $request){
-    $username = Auth::user() ? Auth::user()->username : 'Usuario no autenticado';
+    public function edit($id){
+        $usuario = User::findOrFail($id);
+        return view('users.formulario', compact('usuario'));
+    }
 
-    Auth::logout();
+    public function logout(Request $request){
+        Auth::logout();
 
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-    return redirect()->route('login')->with('success', 'Cerraste sesión correctamente.');
-}
+        return redirect()
+            ->route('login')
+            ->with('success', 'Cerraste sesión correctamente.');
+    }
 
-public function perfil(){
-    $usuario = auth()->user();
-    $comentarios = Comentario::with(['autor','respuestas.autor'])
+    public function perfil(){
+        $usuario = auth()->user();
+
+        $comentarios = Comentario::with(['autor', 'respuestas.autor'])
             ->where('fk_perfil_user', $usuario->pk_usuario)
-            ->whereIn('estatus', ['visible','oculto'])
+            ->whereIn('estatus', ['visible', 'oculto'])
             ->whereNull('fk_coment_respuesta')
             ->orderByDesc('fecha_creacion')
             ->get();
 
-    return view('users.perfil', compact('usuario','comentarios'));
-}
+        return view('users.perfil', compact('usuario', 'comentarios'));
+    }
 
-public function listarCompañeros(){
-    $usuarios = User::where('estatus', true)
-                     ->where('fk_tipo_user', 2)
-                     ->get();
+    public function listarCompañeros(){
+        $usuarios = User::where('estatus', true)
+            ->where('fk_tipo_user', 2)
+            ->get();
 
-    return view('users.compañeros', compact('usuarios'));
-}
+        return view('users.compañeros', compact('usuarios'));
+    }
 
-public function mostrarCompañero($id){
-    $usuario = User::findOrFail($id);
-    $comentarios = \App\Models\Comentario::with(['autor','respuestas.autor'])
-        ->where('fk_perfil_user', $usuario->pk_usuario)
-        ->whereIn('estatus', ['visible','oculto'])
-        ->whereNull('fk_coment_respuesta')
-        ->orderByDesc('fecha_creacion')
-        ->get();
+    public function mostrarCompañero($id){
+        $usuario = User::findOrFail($id);
 
-    return view('users.perfil', compact('usuario', 'comentarios'));
-}
+        $comentarios = Comentario::with(['autor', 'respuestas.autor'])
+            ->where('fk_perfil_user', $usuario->pk_usuario)
+            ->whereIn('estatus', ['visible', 'oculto'])
+            ->whereNull('fk_coment_respuesta')
+            ->orderByDesc('fecha_creacion')
+            ->get();
 
+        return view('users.perfil', compact('usuario', 'comentarios'));
+    }
 }
