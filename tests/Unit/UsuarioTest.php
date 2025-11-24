@@ -83,9 +83,7 @@ class UsuarioTest extends TestCase
         ]);
     }
 
-    /**
-     * Prueba que no se permita eliminar al usuario administrador.
-     */
+    // Prueba que no se permita eliminar al usuario administrador.
     public function EliminarAdmin(){
         // Mock del repositorio
         $repo = Mockery::mock(UserRepositoryInterface::class);
