@@ -5,15 +5,32 @@
 @section('content')
 <div class="max-w-3xl mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg space-y-6">
 
-    <x-msj-alert />
+    @if(session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+            {{ session('success') }}
+        </div>
+    @endif
 
-    <form id="form-insertar"
-          data-url="{{ isset($usuario) ? route('usuarios.update', $usuario->pk_usuario) : route('guardar.user') }}"
+    @if($errors->any())
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <ul>
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- CORRECCIÓN: El action debe ser la ruta POST de guardar --}}
+    <form id="formUsuario"
+          action="{{ isset($usuario) && $usuario->pk_usuario ? route('usuarios.update', $usuario->pk_usuario) : url('admin/usuarios/guardar') }}"
           method="POST"
           enctype="multipart/form-data"
           class="space-y-6">
         @csrf
+        
         @if(isset($usuario))
+            <input type="hidden" name="id" value="{{ $usuario->pk_usuario }}">
             @method('PUT')
         @endif
 
@@ -22,7 +39,7 @@
                 {{ isset($usuario) ? 'Editar usuario' : 'Registrar usuario' }}
             </h1>
 
-            <a href="{{ route('lista_usuarios') }}"
+            <a href="{{ route('admin.usuarios.lista') }}"
                 title="Volver"
                 class="inline-flex items-center space-x-2 bg-gray-200 text-gray-700 px-3 py-2 rounded-full shadow hover:bg-gray-300 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -96,21 +113,19 @@
             <input type="file" name="img_user" id="img_user" accept="image/*" class="hidden" />
         </div>
 
-        @if(isset($usuario))
-            <input type="hidden" name="id" value="{{ $usuario->pk_usuario }}">
-        @endif
-
         <div>
-            <input type="submit"
-                   value="{{ isset($usuario) ? 'Actualizar' : 'Registrar' }}"
+            <button type="submit"
                    class="w-full bg-purple-600 text-white font-semibold px-6 py-3 rounded-md shadow-md
                           hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400
-                          transition duration-200 cursor-pointer" />
+                          transition duration-200">
+                {{ isset($usuario) ? 'Actualizar' : 'Registrar' }}
+            </button>
         </div>
     </form>
 </div>
 
 <script>
+    // Solo para cambiar la imagen preview
     document.getElementById('img_user').addEventListener('change', function(e) {
         const [file] = e.target.files;
         if (file) {

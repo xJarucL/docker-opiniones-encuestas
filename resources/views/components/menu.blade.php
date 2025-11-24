@@ -4,16 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Opiniones y Encuestas')</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/funciones.js', 'resources/js/sweetalert.js'])
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'Opiniones y Encuestas')</title>
+    
+    {{-- CDN de Tailwind --}}
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    {{-- CDN de jQuery --}}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    {{-- CDN de Alpine.js --}}
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    
+    {{-- CDN de SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    {{-- CSS y JS locales (después de copiar a public/) --}}
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <script src="{{ asset('js/app.js') }}" defer></script>
+    
+    {{-- SCRIPTS AÑADIDOS --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-50" x-data="{ openMenu: false, openUser: false }">
 
     <nav class="bg-purple-600 text-white p-4 flex justify-between items-center">
         <div class="flex items-center space-x-2">
             <button @click="openMenu = !openMenu" class="md:hidden focus:outline-none">
-
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
                      viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
                     <path x-show="!openMenu" d="M4 6h16M4 12h16M4 18h16"/>
@@ -57,7 +78,7 @@
                 </a>
 
                 @if(auth()->user()->fk_tipo_user == 1)
-                    <a href="{{ route('lista_usuarios') }}"
+                    <a href="{{ route('admin.usuarios.lista') }}"
                        class="block px-4 py-2 hover:bg-purple-100 hover:text-purple-700 rounded-lg transition">
                         Gestión de usuarios
                     </a>
@@ -68,9 +89,12 @@
                     Perfil
                 </a>
 
+                {{-- --- INICIO DE LA CORRECCIÓN DEL FORMULARIO --- --}}
                 <form id="logout-form" method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit"
+                    
+                    {{-- 1. Botón visible cambiado a type="button" --}}
+                    <button type="button"
                             data-swal-form
                             data-target-form="logout-form"
                             data-swal-title="Cerrar sesión"
@@ -81,7 +105,11 @@
                             class="w-full text-left px-4 py-2 hover:bg-red-100 hover:text-red-700 rounded-lg transition">
                         Cerrar sesión
                     </button>
+                    
+                    {{-- 2. Botón de submit oculto añadido (para que app.js lo use) --}}
+                    <button type="submit" class="hidden" data-swal-submit-button></button>
                 </form>
+                {{-- --- FIN DE LA CORRECCIÓN --- --}}
             </div>
         </div>
     </nav>
@@ -111,7 +139,7 @@
             @if(auth()->user()->fk_tipo_user == 1)
                 <div class="border-t border-purple-600 pt-2 mt-2">
                     <span class="text-xs uppercase text-purple-300 font-semibold">Administrador</span>
-                    <a href="{{ route('lista_usuarios') }}" class="block px-4 py-2 rounded-lg hover:bg-purple-600 transition mt-1">
+                    <a href="{{ route('admin.usuarios.lista') }}" class="block px-4 py-2 rounded-lg hover:bg-purple-600 transition mt-1">
                         Gestión de usuarios
                     </a>
                 </div>

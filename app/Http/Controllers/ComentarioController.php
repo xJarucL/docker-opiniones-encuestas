@@ -33,6 +33,29 @@ class ComentarioController extends Controller
 
         return back()->with('success', 'Comentario publicado correctamente.');
     }
+    /**
+ * Elimina un comentario (función de administrador).
+ */
+public function destroyAdmin(Comentario $comentario)
+{
+    // Laravel encuentra el comentario automáticamente gracias al route model binding.
+    // Si tu modelo 'Comentario' usa SoftDeletes, esto será un borrado lógico.
+    $comentario->delete();
+
+    return redirect()->route('admin.comentarios.index')->with('success', 'Comentario eliminado correctamente.');
+}
+        /**
+ * Vuelve a mostrar un comentario que estaba oculto.
+ */
+public function showComment(Comentario $comentario)
+{
+    // Laravel encuentra el comentario automáticamente gracias al route model binding.
+    // Asumiendo que 1 = 'Visible' (según tu vista de admin/comentarios/index.blade.php)
+    $comentario->estatus = 1;
+    $comentario->save();
+
+    return redirect()->route('admin.comentarios.index')->with('success', 'El comentario ahora está visible.');
+}
 
     public function reply(Request $r, Comentario $comentario)
     {
@@ -71,4 +94,18 @@ class ComentarioController extends Controller
         $comentario->update(['estatus' => 'visible']);
         return back()->with('success', 'Comentario visible.');
     }
+    public function index()
+{
+    // Obtenemos todos los comentarios.
+    // Es buena práctica cargar relaciones (como el usuario que lo escribió)
+    // y paginar los resultados para un panel de admin.
+    $comentarios = Comentario::with('user') // Carga la relación 'user'
+                            ->latest()      // Ordena del más nuevo al más viejo
+                            ->paginate(20);  // Muestra 20 por página
+
+    // Devuelve la vista de admin, pasándole los comentarios
+    return view('admin.comentarios.index', [
+        'comentarios' => $comentarios
+    ]);
+}
 }

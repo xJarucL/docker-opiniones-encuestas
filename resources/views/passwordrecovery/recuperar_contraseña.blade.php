@@ -1,4 +1,8 @@
-@vite(['resources/css/app.css', 'resources/js/app.js'])
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="{{ asset('css/app.css') }}">
+<script src="{{ asset('js/app.js') }}" defer></script>
+<script src="{{ asset('js/funciones.js') }}" defer></script>
+<script src="{{ asset('js/sweetalert.js') }}" defer></script>
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 <div class="min-h-screen w-full flex flex-col items-center justify-center
