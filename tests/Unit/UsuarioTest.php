@@ -18,7 +18,7 @@ class UsuarioTest extends TestCase
 
 
     // Prueba que un usuario pueda registrarse correctamente cuando todos los datos son válidos.
-    public function RegistrarUsuarioExitosamente(){
+    public function test_registrar_usuario_exitosamente(){
         // Creamos un mock del repositorio
         $mockRepo = Mockery::mock(UserRepositoryInterface::class);
 
@@ -58,7 +58,7 @@ class UsuarioTest extends TestCase
 
 
     // Prueba que no permita registrar un usuario si el correo ya existe.
-    public function ControlDeCorreoDuplicado(){
+    public function test_control_de_correo_duplicado(){
         // Creamos mock del repositorio
         $repo = Mockery::mock(UserRepositoryInterface::class);
 
@@ -84,7 +84,7 @@ class UsuarioTest extends TestCase
     }
 
     // Prueba que no se permita eliminar al usuario administrador.
-    public function EliminarAdmin(){
+    public function test_eliminar_admin(){
         // Mock del repositorio
         $repo = Mockery::mock(UserRepositoryInterface::class);
 
@@ -108,7 +108,7 @@ class UsuarioTest extends TestCase
     }
 
     // Prueba que un usuario normal pueda eliminarse sin problemas.
-    public function EliminarNormal(){
+    public function test_eliminar_normal(){
         // Mock del repositorio
         $repo = Mockery::mock(UserRepositoryInterface::class);
 
