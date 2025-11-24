@@ -58,7 +58,7 @@ class UsuarioTest extends TestCase
 
 
     // Prueba que no permita registrar un usuario si el correo ya existe.
-    public function test_no_permite_correo_duplicado(){
+    public function ControlDeCorreoDuplicado(){
         // Creamos mock del repositorio
         $repo = Mockery::mock(UserRepositoryInterface::class);
 
@@ -83,10 +83,8 @@ class UsuarioTest extends TestCase
         ]);
     }
 
-    /**
-     * Prueba que no se permita eliminar al usuario administrador.
-     */
-    public function test_no_puede_eliminar_admin(){
+    // Prueba que no se permita eliminar al usuario administrador.
+    public function EliminarAdmin(){
         // Mock del repositorio
         $repo = Mockery::mock(UserRepositoryInterface::class);
 
@@ -110,7 +108,7 @@ class UsuarioTest extends TestCase
     }
 
     // Prueba que un usuario normal pueda eliminarse sin problemas.
-    public function test_eliminar_usuario_normal(){
+    public function EliminarNormal(){
         // Mock del repositorio
         $repo = Mockery::mock(UserRepositoryInterface::class);
 
