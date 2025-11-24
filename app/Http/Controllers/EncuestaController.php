@@ -19,12 +19,18 @@ class EncuestaController extends Controller
 
         return back()->with('success', '¡Resultados liberados! El público ya puede verlos.');
     }
+    
     /**
+     * Vista pública de encuestas
+     */
+/**
      * Vista pública de encuestas
      */
     public function showPublicIndex()
     {
-        $encuestas = Encuesta::where('estado', 1)
+        // USAMOS EL NUEVO SCOPE 'publicas()'
+        // Esto oculta automáticamente las programadas o finalizadas
+        $encuestas = Encuesta::publicas() 
                             ->with('preguntas') 
                             ->latest()
                             ->paginate(10);
@@ -32,17 +38,14 @@ class EncuestaController extends Controller
         $usuario = Auth::user();
         $userId = $usuario->pk_usuario;
 
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Buscamos todas las encuestas en las que este usuario ha participado
+        // (Tu lógica de encuestas respondidas sigue igual...)
         $encuestasRespondidas = DB::table('respuestas')
             ->join('preguntas', 'respuestas.pregunta_id', '=', 'preguntas.id')
-            // CORREGIDO: Volvemos a 'user_id' (o el nombre que tengas en tu DB de 'respuestas')
             ->where('respuestas.user_id', $userId) 
             ->select('preguntas.encuesta_id')
             ->distinct()
             ->pluck('encuesta_id')
             ->flip(); 
-        // --- FIN DE LA CORRECCIÓN ---
                             
         return view('users.encuestas', [
             'encuestas' => $encuestas,
@@ -50,7 +53,6 @@ class EncuestaController extends Controller
             'encuestasRespondidas' => $encuestasRespondidas
         ]);
     }
-    
 
 
     // ==========================================================
@@ -126,28 +128,38 @@ class EncuestaController extends Controller
     /**
      * Mostrar resultados de una encuesta
      */
-    public function show($id)
+public function show($id)
     {
+        // Cargamos la encuesta
         $encuesta = Encuesta::with(['categoria', 'preguntas.respuestas'])->findOrFail($id);
         
-        $totalRespuestas = 0;
-        foreach ($encuesta->preguntas as $pregunta) {
-            $totalRespuestas += $pregunta->respuestas->count();
-        }
-        
-        $promedioRespuestas = $encuesta->preguntas->count() > 0 
-            ? $totalRespuestas / $encuesta->preguntas->count() 
-            : 0;
-        
-        $ultimaRespuesta = null;
-        if ($totalRespuestas > 0) {
-            $primeraPreguntaConRespuesta = $encuesta->preguntas->first(function($p) { return $p->respuestas->isNotEmpty(); });
-            if ($primeraPreguntaConRespuesta) {
-                $ultimaRespuesta = $primeraPreguntaConRespuesta->respuestas->sortByDesc('created_at')->first()->created_at->format('d/m/Y');
-            }
-        }
+        // 1. Obtener IDs de las preguntas de esta encuesta
+        $preguntaIds = $encuesta->preguntas->pluck('id');
 
-        return view('admin.encuestas.show', compact('encuesta', 'totalRespuestas', 'promedioRespuestas', 'ultimaRespuesta'));
+        // 2. Contar usuarios ÚNICOS que han respondido (evita contar doble si responden varias preguntas)
+        $usuariosParticipantes = DB::table('respuestas')
+            ->whereIn('pregunta_id', $preguntaIds)
+            ->distinct('user_id')
+            ->count();
+
+        // 3. Contar total de usuarios en el sistema (o el grupo objetivo)
+        $totalUsuarios = User::count();
+
+        // 4. Calcular pendientes y porcentaje
+        $usuariosPendientes = $totalUsuarios - $usuariosParticipantes;
+        $porcentajeParticipacion = $totalUsuarios > 0 ? ($usuariosParticipantes / $totalUsuarios) * 100 : 0;
+
+        // Variables antiguas (por si las usas en otro lado)
+        $totalRespuestas = DB::table('respuestas')->whereIn('pregunta_id', $preguntaIds)->count();
+
+        return view('admin.encuestas.show', compact(
+            'encuesta', 
+            'totalRespuestas', 
+            'usuariosParticipantes', 
+            'usuariosPendientes', 
+            'totalUsuarios',
+            'porcentajeParticipacion'
+        ));
     }
 
     /**
